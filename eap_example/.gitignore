@@ -1,4 +1,5 @@
 *.d
 eap_example
+gary_example
 libeap.so
 libeap.a
