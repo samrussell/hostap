@@ -244,10 +244,11 @@ void eap_example_server_deinit(void)
 	tls_deinit(eap_ctx.tls_ctx);
 }
 
-
 int eap_example_server_step(void)
 {
 	int res, process = 0;
+	const u8 *header_data;
+	int i;
 
 	res = eap_server_sm_step(eap_ctx.eap);
 
@@ -278,8 +279,61 @@ int eap_example_server_step(void)
 
 	if (process && eap_ctx.eap_if->eapReqData) {
 		/* Send EAP request to the peer */
-		eap_example_peer_rx(wpabuf_head(eap_ctx.eap_if->eapReqData),
+		header_data = wpabuf_head(eap_ctx.eap_if->eapReqData);
+		printf("header:\n");
+		for(i=0; i < wpabuf_len(eap_ctx.eap_if->eapReqData); i++){
+			printf("%02X", header_data[i]);
+		}
+		printf("\n");
+		eap_example_peer_rx(header_data,
 				    wpabuf_len(eap_ctx.eap_if->eapReqData));
+	}
+
+	return res;
+}
+
+
+int eap_example_server_step_gary(void)
+{
+	int res, process = 0;
+	const u8 *header_data;
+	int i;
+
+	res = eap_server_sm_step(eap_ctx.eap);
+
+	if (eap_ctx.eap_if->eapReq) {
+		printf("==> Request\n");
+		process = 1;
+		eap_ctx.eap_if->eapReq = 0;
+	}
+
+	if (eap_ctx.eap_if->eapSuccess) {
+		printf("==> Success\n");
+		process = 1;
+		res = 0;
+		eap_ctx.eap_if->eapSuccess = 0;
+
+		if (eap_ctx.eap_if->eapKeyAvailable) {
+			wpa_hexdump(MSG_DEBUG, "EAP keying material",
+				    eap_ctx.eap_if->eapKeyData,
+				    eap_ctx.eap_if->eapKeyDataLen);
+		}
+	}
+
+	if (eap_ctx.eap_if->eapFail) {
+		printf("==> Fail\n");
+		process = 1;
+		eap_ctx.eap_if->eapFail = 0;
+	}
+
+	if (process && eap_ctx.eap_if->eapReqData) {
+		/* Send EAP response to the server */
+		header_data = wpabuf_head(eap_ctx.eap_if->eapReqData);
+		printf("header:\n");
+		for(i=0; i < wpabuf_len(eap_ctx.eap_if->eapReqData); i++){
+			printf("%02X", header_data[i]);
+		}
+		printf("\n");
 	}
 
 	return res;

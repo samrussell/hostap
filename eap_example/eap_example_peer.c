@@ -339,6 +339,8 @@ void eap_example_peer_deinit(void)
 int eap_example_peer_step(void)
 {
 	int res;
+	int i;
+	const u8 *header_data;
 	res = eap_peer_sm_step(eap_ctx.eap);
 
 	if (eap_ctx.eapResp) {
@@ -348,6 +350,12 @@ int eap_example_peer_step(void)
 		resp = eap_get_eapRespData(eap_ctx.eap);
 		if (resp) {
 			/* Send EAP response to the server */
+			header_data = wpabuf_head(resp);
+			printf("header:\n");
+			for(i=0; i < wpabuf_len(resp); i++){
+				printf("%02X", header_data[i]);
+			}
+			printf("\n");
 			eap_example_server_rx(wpabuf_head(resp),
 					      wpabuf_len(resp));
 			wpabuf_free(resp);
