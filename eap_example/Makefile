@@ -109,7 +109,7 @@ endif
 
 %.o: %.c
 	$(Q)$(CC) -c -o $@ $(CFLAGS) $<
-	@$(E) "  CC " $<
+	@$(E) "  CC " $< -lczmq -lzmq
 
 
 OBJS_lib=$(OBJS_both) $(OBJS_peer) $(OBJS_server)
@@ -145,7 +145,7 @@ libeap.so: $(OBJS_lib)
 endif
 
 eap_example: $(OBJS_ex) $(LIBEAP)
-	$(LDO) $(LDFLAGS) -o eap_example $(OBJS_ex) -L. -leap $(LIBS)
+	$(LDO) $(LDFLAGS) -o eap_example $(OBJS_ex) -L. -leap $(LIBS) -lczmq -lzmq
 
 gary_example: $(OBJS_ex_gary) $(LIBEAP)
 	$(LDO) $(LDFLAGS) -o gary_example $(OBJS_ex_gary) -L. -leap $(LIBS) -lczmq -lzmq

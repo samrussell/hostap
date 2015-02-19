@@ -14,6 +14,8 @@
 #include "eap_server/eap.h"
 #include "wpabuf.h"
 
+#include "czmq.h"
+
 void eap_example_peer_rx(const u8 *data, size_t data_len);
 
 
@@ -25,6 +27,7 @@ struct eap_server_ctx {
 
 static struct eap_server_ctx eap_ctx;
 
+static zsock_t* sock;
 
 static int server_get_eap_user(void *ctx, const u8 *identity,
 			       size_t identity_len, int phase2,
@@ -293,11 +296,14 @@ int eap_example_server_step(void)
 }
 
 
-int eap_example_server_step_gary(void)
+int eap_example_server_step_gary(zsock_t * sock_in)
 {
 	int res, process = 0;
 	const u8 *header_data;
 	int i;
+	char* outstr=NULL;
+
+	sock = sock_in;
 
 	res = eap_server_sm_step(eap_ctx.eap);
 
@@ -329,11 +335,14 @@ int eap_example_server_step_gary(void)
 	if (process && eap_ctx.eap_if->eapReqData) {
 		/* Send EAP response to the server */
 		header_data = wpabuf_head(eap_ctx.eap_if->eapReqData);
-		printf("header:\n");
+		//printf("header:\n");
+		outstr = calloc(1, strlen(header_data)*2+2);
 		for(i=0; i < wpabuf_len(eap_ctx.eap_if->eapReqData); i++){
-			printf("%02X", header_data[i]);
+			sprintf(&outstr[i*2], "%02X", header_data[i]);
 		}
-		printf("\n");
+		zstr_sendf(sock, "%s", outstr);
+		free(outstr);
+		//printf("\n");
 	}
 
 	return res;

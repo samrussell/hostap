@@ -22,7 +22,7 @@ int eap_example_peer_step(void);
 
 int eap_example_server_init(void);
 void eap_example_server_deinit(void);
-int eap_example_server_step_gary(void);
+int eap_example_server_step_gary(zsock_t*);
 
 void eap_example_server_rx(const u8 *data, size_t data_len);
 
@@ -44,16 +44,17 @@ int main(int argc, char *argv[])
 
 	do {
 		printf("---[ server ]--------------------------------\n");
-		res_s = eap_example_server_step_gary();
+		res_s = eap_example_server_step_gary(sock);
 		printf("---[ peer ]----------------------------------\n");
 		//res_p = eap_example_peer_step();
 		//scanf("%s", text);
 		instr = zstr_recv(sock);
 		printf("received data %s\n", instr);
 		// convert to data and pass
-		for(i=0; i<strlen(instr); i++){
+		for(i=0; i<strlen(instr)/2; i++){
 			sscanf(&instr[i*2], "%2X", &message[i]);
 		}
+		//zstr_free(instr);
 		eap_example_server_rx(message, i);
 
 
