@@ -18,6 +18,7 @@ endif
 CFLAGS += -I.
 CFLAGS += -I../src
 CFLAGS += -I../src/utils
+CFLAGS += -I/usr/local/include
 
 
 OBJS_both += ../src/utils/libutils.a
@@ -147,7 +148,7 @@ eap_example: $(OBJS_ex) $(LIBEAP)
 	$(LDO) $(LDFLAGS) -o eap_example $(OBJS_ex) -L. -leap $(LIBS)
 
 gary_example: $(OBJS_ex_gary) $(LIBEAP)
-	$(LDO) $(LDFLAGS) -o gary_example $(OBJS_ex_gary) -L. -leap $(LIBS)
+	$(LDO) $(LDFLAGS) -o gary_example $(OBJS_ex_gary) -L. -leap $(LIBS) -lczmq -lzmq
 
 
 clean:

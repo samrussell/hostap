@@ -13,6 +13,8 @@
 
 #include "common.h"
 
+#include "czmq.h"
+
 
 int eap_example_peer_init(void);
 void eap_example_peer_deinit(void);
@@ -30,8 +32,11 @@ int main(int argc, char *argv[])
 	int i;
 	char text[100]; // terrible way to do this
 	char message[100];
+	char* instr = NULL;
+	zsock_t *sock;
 
 	wpa_debug_level = 0;
+	sock = zsock_new_pair("@tcp://127.0.0.1:4567");
 
 	if (eap_example_peer_init() < 0 ||
 	    eap_example_server_init() < 0)
@@ -42,10 +47,12 @@ int main(int argc, char *argv[])
 		res_s = eap_example_server_step_gary();
 		printf("---[ peer ]----------------------------------\n");
 		//res_p = eap_example_peer_step();
-		scanf("%s", text);
+		//scanf("%s", text);
+		instr = zstr_recv(sock);
+		printf("received data %s\n", instr);
 		// convert to data and pass
-		for(i=0; i<strlen(text); i++){
-			sscanf(&text[i*2], "%2X", &message[i]);
+		for(i=0; i<strlen(instr); i++){
+			sscanf(&instr[i*2], "%2X", &message[i]);
 		}
 		eap_example_server_rx(message, i);
 
