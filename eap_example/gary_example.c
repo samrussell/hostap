@@ -37,6 +37,7 @@ int main(int argc, char *argv[])
 
 	wpa_debug_level = 0;
 	sock = zsock_new_pair("@tcp://127.0.0.1:4567");
+	zsock_set_rcvtimeo(sock, 1000);
 
 	if (eap_example_peer_init() < 0 ||
 	    eap_example_server_init() < 0)
@@ -49,16 +50,22 @@ int main(int argc, char *argv[])
 		//res_p = eap_example_peer_step();
 		//scanf("%s", text);
 		instr = zstr_recv(sock);
-		printf("received data %s\n", instr);
-		// convert to data and pass
-		for(i=0; i<strlen(instr)/2; i++){
-			sscanf(&instr[i*2], "%2X", &message[i]);
+		if (instr == NULL){
+			printf("Timeout, doing step anyway\n");
 		}
-		//zstr_free(instr);
-		eap_example_server_rx(message, i);
+		else{
+			printf("received data %s\n", instr);
+			// convert to data and pass
+			for(i=0; i<strlen(instr)/2; i++){
+				sscanf(&instr[i*2], "%2X", &message[i]);
+			}
+			zstr_free(instr);
+			eap_example_server_rx(message, i);
+		}
 
 
-	} while (res_s || res_p);
+	} while (1);
+	//} while (res_s || res_p);
 
 	eap_example_peer_deinit();
 	eap_example_server_deinit();
